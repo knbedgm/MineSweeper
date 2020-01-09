@@ -52,7 +52,7 @@ namespace Final_MineSweeper
 			});
 		}
 
-        private void PictureBox1_Paint(object sender, PaintEventArgs e)
+        private void Canvas_Paint(object sender, PaintEventArgs e)
         {
 			mineField.ForEach((List<Tile> col) => {
 				col.ForEach((Tile t) => {
@@ -76,15 +76,16 @@ namespace Final_MineSweeper
 			}
 		}
 
-        private void Button1_Click(object sender, EventArgs e)
+        private void BtnStart_Click(object sender, EventArgs e)
         {
-          NewGame();
-          timer1.Start();
+			NewGame();
+			txtTimer.Text = "0";
+			timer1.Start();
           
         }
         private void Timer1_Tick(object sender, EventArgs e)
         {
-           txtTimer.Text = txtTimer.Text + 1;
+           txtTimer.Text = (Convert.ToInt32(txtTimer.Text) + 1).ToString();
         }
 
         public void CalculateDanger()
@@ -99,11 +100,72 @@ namespace Final_MineSweeper
 
 		public void ForNeighbors(Tile tile, tileCallback callback)
 		{
-           if (tile.x == 0 && tile.y == 0)
+			if (tile.x == 0 && tile.y == 0)
 			{
-				callback(mineField[tile.x+1][tile.y]);
-				callback(mineField[tile.x+1][tile.y+1]);
-				callback(mineField[tile.x][tile.y+1]);
+				callback(mineField[tile.x + 1][tile.y    ]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x    ][tile.y+1]);
+			}
+			else if (tile.x == 0 && tile.y == height - 1)
+			{
+				callback(mineField[tile.x + 1][tile.y    ]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x    ][tile.y - 1]);
+			}
+			else if (tile.x == width - 1 && tile.y == 0)
+			{
+				callback(mineField[tile.x - 1][tile.y    ]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x    ][tile.y + 1]);
+			}
+			else if (tile.x == width - 1 && tile.y == height - 1)
+			{
+				callback(mineField[tile.x - 1][tile.y    ]);
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x    ][tile.y - 1]);
+			}
+			else if (tile.x == 0)
+			{
+				callback(mineField[tile.x    ][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y    ]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x    ][tile.y + 1]);
+			}
+			else if (tile.x == width - 1)
+			{
+				callback(mineField[tile.x    ][tile.y - 1]);
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x - 1][tile.y    ]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x    ][tile.y + 1]);
+			}
+			else if (tile.y == 0)
+			{
+				callback(mineField[tile.x - 1][tile.y    ]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x    ][tile.y + 1]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x + 1][tile.y    ]);
+			}
+			else if (tile.y == height - 1)
+			{
+				callback(mineField[tile.x - 1][tile.y    ]);
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x    ][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y    ]);
+			}
+			else
+			{
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x    ][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y    ]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x    ][tile.y + 1]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x - 1][tile.y    ]);
 			}
 		}
 
@@ -141,13 +203,23 @@ namespace Final_MineSweeper
 
 		public void Draw(Graphics g)
 		{
-		    SolidBrush b = new SolidBrush(Color.LightGray);
-			Pen p = new Pen(Color.Black, 1);
-            g.FillRectangle(b, x*size, y*size, size, size);
-			g.DrawLine(p, x*size+size-1, y*size, x*size+size-1, y*size+size);
-			g.DrawLine(p, x*size, y*size+size-1, x*size+size, y*size+size-1);
-          
-        }
+			if (state.Equals(ClickedState.unClicked))
+			{
+				// fill
+				SolidBrush b = new SolidBrush(Color.Gray);
+				g.FillRectangle(b, x * size, y * size, size, size);
+				
+				// Border
+				Pen p = new Pen(Color.DarkGray, 2);
+				g.DrawLine(p, x * size + size - 1, y * size, x * size + size - 1, y * size + size);
+				g.DrawLine(p, x * size, y * size + size - 1, x * size + size, y * size + size - 1);
+				p.Color = Color.LightGray;
+				g.DrawLine(p, x * size, y * size, x * size, y * size + size);
+				g.DrawLine(p, x * size, y * size, x * size + size, y * size);
+
+				g.DrawString(bombsNear.ToString(), new Font("Arial", 10), b, x * size, y * size);
+			}
+		}
 	}
    
 }
