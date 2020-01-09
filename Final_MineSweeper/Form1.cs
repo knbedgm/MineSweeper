@@ -21,23 +21,19 @@ namespace Final_MineSweeper
 		List<List<Tile>> mineField = new List<List<Tile>>();
 		int height = 9, width = 9, mineCount = 10;
 
-		private void Form1_Load(object sender, EventArgs e)
-		{
-			NewGame();
-		}
-
-        private void PictureBox1_Click(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            
+            NewMinefield();
         }
 
         public void NewGame()
 		{
-			NewMinefeild();
+			NewMinefield();
 			GenerateMines();
+			CalculateDanger();
 		}
 
-        public void NewMinefeild()
+        public void NewMinefield()
         {
 			mineField.Clear();
 			for (int i = 0; i < height; i++)
@@ -80,9 +76,35 @@ namespace Final_MineSweeper
 			}
 		}
 
-		public void ForNeighbors(Tile t, tileCallback callback)
+        private void Button1_Click(object sender, EventArgs e)
+        {
+          NewGame();
+          timer1.Start();
+          
+        }
+        private void Timer1_Tick(object sender, EventArgs e)
+        {
+           txtTimer.Text = txtTimer.Text + 1;
+        }
+
+        public void CalculateDanger()
 		{
-           
+			mineField.ForEach((List<Tile> col) => {
+				col.ForEach((Tile t) => {
+					t.bombsNear = 0;
+					ForNeighbors(t, t.AddBomb);
+				});
+			});
+		}
+
+		public void ForNeighbors(Tile tile, tileCallback callback)
+		{
+           if (tile.x == 0 && tile.y == 0)
+			{
+				callback(mineField[tile.x+1][tile.y]);
+				callback(mineField[tile.x+1][tile.y+1]);
+				callback(mineField[tile.x][tile.y+1]);
+			}
 		}
 
 	}
@@ -119,8 +141,7 @@ namespace Final_MineSweeper
 
 		public void Draw(Graphics g)
 		{
-			
-			SolidBrush b = new SolidBrush(Color.LightGray);
+		    SolidBrush b = new SolidBrush(Color.LightGray);
 			Pen p = new Pen(Color.Black, 1);
             g.FillRectangle(b, x*size, y*size, size, size);
 			g.DrawLine(p, x*size+size-1, y*size, x*size+size-1, y*size+size);
