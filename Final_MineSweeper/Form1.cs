@@ -141,6 +141,7 @@ namespace Final_MineSweeper
 
 		public void Draw(Graphics g)
 		{
+
 		    SolidBrush b = new SolidBrush(Color.LightGray);
 			Pen p = new Pen(Color.Black, 1);
             g.FillRectangle(b, x*size, y*size, size, size);
