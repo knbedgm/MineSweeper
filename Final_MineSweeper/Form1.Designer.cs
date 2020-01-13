@@ -29,7 +29,7 @@
 		private void InitializeComponent()
 		{
             this.components = new System.ComponentModel.Container();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.canvas = new System.Windows.Forms.PictureBox();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.btnStart = new System.Windows.Forms.Button();
             this.txtTimer = new System.Windows.Forms.TextBox();
@@ -41,18 +41,18 @@
             this.easyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mediumToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.hardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.canvas)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // pictureBox1
+            // canvas
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(61, 77);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(270, 270);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.PictureBox1_Paint);
+            this.canvas.Location = new System.Drawing.Point(61, 77);
+            this.canvas.Name = "canvas";
+            this.canvas.Size = new System.Drawing.Size(270, 270);
+            this.canvas.TabIndex = 0;
+            this.canvas.TabStop = false;
+            this.canvas.Paint += new System.Windows.Forms.PaintEventHandler(this.Canvas_Paint);
             // 
             // timer1
             // 
@@ -67,7 +67,7 @@
             this.btnStart.TabIndex = 1;
             this.btnStart.Text = "Start Game";
             this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.Button1_Click);
+            this.btnStart.Click += new System.EventHandler(this.BtnStart_Click);
             // 
             // txtTimer
             // 
@@ -147,13 +147,13 @@
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.txtTimer);
             this.Controls.Add(this.btnStart);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.canvas);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "Minesweeper";
             this.Load += new System.EventHandler(this.Form1_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.canvas)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
