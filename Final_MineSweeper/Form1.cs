@@ -19,7 +19,12 @@ namespace Final_MineSweeper
 		}
 
 		List<List<Tile>> mineField = new List<List<Tile>>();
-		int height = 9, width = 9, mineCount = 10;
+		int height = 9, 
+			width = 9, 
+			mineCount = 10,
+			flagsRemaining = 99;
+		bool running = false;
+		
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -31,6 +36,7 @@ namespace Final_MineSweeper
 			NewMinefield();
 			GenerateMines();
 			CalculateDanger();
+			flagsRemaining = mineCount;
 		}
 
         public void NewMinefield()
@@ -45,11 +51,6 @@ namespace Final_MineSweeper
 				}
 				mineField.Add(col);
 			}
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => {
-					ForNeighbors(t, t.AddBomb);
-				});
-			});
 		}
 
         private void Canvas_Paint(object sender, PaintEventArgs e)
@@ -59,6 +60,7 @@ namespace Final_MineSweeper
 					t.Draw(e.Graphics);
 				});
 			});
+
         }
 
         public void GenerateMines() {
@@ -79,16 +81,31 @@ namespace Final_MineSweeper
         private void BtnStart_Click(object sender, EventArgs e)
         {
 			NewGame();
-			txtTimer.Text = "0";
+			lblTimer.Text = "0";
 			timer1.Start();
-          
-        }
-        private void Timer1_Tick(object sender, EventArgs e)
+			running = true;
+		}
+
+		private void canvas_MouseClick(object sender, MouseEventArgs e)
+		{
+			if (!running) return;
+
+			//find block clicked
+			int x, y;
+			x = e.X/(Tile.size);
+			y = e.Y/(Tile.size);
+			mineField[x][y].Click(e);
+			flagsRemaining = CalculateRemainingFlags();
+			lblFlags.Text = flagsRemaining.ToString();
+			canvas.Invalidate();
+		}
+
+		private void Timer1_Tick(object sender, EventArgs e)
         {
-           txtTimer.Text = (Convert.ToInt32(txtTimer.Text) + 1).ToString();
+           lblTimer.Text = (Convert.ToInt32(lblTimer.Text) + 1).ToString();
         }
 
-        public void CalculateDanger()
+		public void CalculateDanger()
 		{
 			mineField.ForEach((List<Tile> col) => {
 				col.ForEach((Tile t) => {
@@ -96,6 +113,18 @@ namespace Final_MineSweeper
 					ForNeighbors(t, t.AddBomb);
 				});
 			});
+		}
+
+		public int CalculateRemainingFlags()
+		{
+			int flags = mineCount;
+			mineField.ForEach((List<Tile> col) => {
+				col.ForEach((Tile t) => {
+					if (t.state == Tile.ClickedState.flagged)
+						flags--;
+				});
+			});
+			return flags;
 		}
 
 		public void ForNeighbors(Tile tile, tileCallback callback)
@@ -184,7 +213,7 @@ namespace Final_MineSweeper
 		public bool isBomb = false;
 		public byte bombsNear = 0;
 
-		public int size = 30;
+		public static int size = 30;
 		public int x, y;
 
 		public Tile(int x, int y)
@@ -198,6 +227,22 @@ namespace Final_MineSweeper
 			if (t.isBomb)
 			{
 				bombsNear++;
+			}
+		}
+
+		public void Click(MouseEventArgs e)
+		{
+			if (state == ClickedState.unClicked && e.Button == MouseButtons.Left)
+			{
+				state = Tile.ClickedState.clicked;
+			}
+			else if (state == ClickedState.unClicked && e.Button == MouseButtons.Right)
+			{
+				state = Tile.ClickedState.flagged;
+			}
+			else if (state == ClickedState.flagged && e.Button == MouseButtons.Right)
+			{
+				state = Tile.ClickedState.unClicked;
 			}
 		}
 
@@ -217,9 +262,41 @@ namespace Final_MineSweeper
 				g.DrawLine(p, x * size, y * size, x * size, y * size + size);
 				g.DrawLine(p, x * size, y * size, x * size + size, y * size);
 
-				g.DrawString(bombsNear.ToString(), new Font("Arial", 10), b, x * size, y * size);
 			}
-		}
+			else if (state.Equals(ClickedState.clicked))
+			{
+				// fill
+				SolidBrush b = new SolidBrush(Color.Gray);
+				g.FillRectangle(b, x * size, y * size, size, size);
+
+
+				g.DrawString(bombsNear.ToString(), new Font("Arial", 10), b, x * size, y * size);
+
+			}
+			else if (state.Equals(ClickedState.flagged))
+			{
+				// fill
+				SolidBrush b = new SolidBrush(Color.Gray);
+				g.FillRectangle(b, x * size, y * size, size, size);
+
+				// Border
+				Pen p = new Pen(Color.DarkGray, 2);
+				g.DrawLine(p, x * size + size - 1, y * size, x * size + size - 1, y * size + size);
+				g.DrawLine(p, x * size, y * size + size - 1, x * size + size, y * size + size - 1);
+				p.Color = Color.LightGray;
+				g.DrawLine(p, x * size, y * size, x * size, y * size + size);
+				g.DrawLine(p, x * size, y * size, x * size + size, y * size);
+
+				g.DrawString(bombsNear.ToString(), new Font("Arial", 10), b, x * size, y * size);
+
+				// Flags
+				b.Color = Color.Red;
+				g.FillEllipse(b, x * size + 5 , y * size + 5, size - 10 , size - 10);
+
+				// On Right Click
+
+			}
+		}	
 	}
    
 }
