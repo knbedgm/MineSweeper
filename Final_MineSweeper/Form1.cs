@@ -19,13 +19,13 @@ namespace Final_MineSweeper
 		}
 
 		List<List<Tile>> mineField = new List<List<Tile>>();
+		
 		int height = 9, 
 			width = 9, 
 			mineCount = 10,
 			flagsRemaining = 99;
 		bool running = false;
 		DateTime startTime = DateTime.MinValue;
-		
 
 		private void Form1_Load(object sender, EventArgs e)
 		{
@@ -41,6 +41,7 @@ namespace Final_MineSweeper
 			flagsRemaining = mineCount;
 			canvas.Invalidate();
 			startTime = DateTime.MinValue;
+			timer1.Start();
 		}
 
 		public void NewMinefield()
@@ -86,6 +87,7 @@ namespace Final_MineSweeper
 		{
 			NewGame();
 			lblTimer.Text = "0";
+			lblFlags.Text = mineCount.ToString();
 			running = true;
 		}
 
@@ -104,10 +106,14 @@ namespace Final_MineSweeper
 			//calculate the number of flags remaining and display that to the user
 			flagsRemaining = CalculateRemainingFlags();
 			lblFlags.Text = flagsRemaining.ToString();
+
 			// re-draw the screen
 			canvas.Invalidate();
 			//if the timer hasn't been started then start it;
 			if (startTime.CompareTo(DateTime.MinValue) == 0) startTime = DateTime.Now;
+
+			//check if the game is over
+			CheckGameOver();
 		}
 
 		private void Timer1_Tick(object sender, EventArgs e)
@@ -212,6 +218,50 @@ namespace Final_MineSweeper
 			}
 		}
 
+		public void CheckGameOver()
+		{
+			bool loss = false;
+			bool win = true;
+			mineField.ForEach((List<Tile> col) => {
+				col.ForEach((Tile t) => {
+					if (t.isBomb && t.state == Tile.ClickedState.clicked){
+						loss = true;
+
+					} 
+					if (!t.isBomb && t.state != Tile.ClickedState.clicked){
+						win = false;
+					}
+				});
+			});
+
+			if (loss) {
+				mineField.ForEach((List<Tile> col) => {
+					col.ForEach((Tile t) => {
+						t.Click(new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0));	
+					});
+				});
+				
+				canvas.Invalidate();
+
+				running = false;
+
+				timer1.Stop();
+				DateTime now = DateTime.Now;
+				TimeSpan time = now.Subtract(startTime);
+
+				MessageBox.Show(String.Format("You lost the game in {0:0.###} seconds", time.TotalSeconds), "You Lost", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			else if (win){
+				running = false;
+
+				timer1.Stop();
+				DateTime now = DateTime.Now;
+				TimeSpan time = now.Subtract(startTime);
+
+				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!", time.TotalSeconds), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			}
+		}
+
 	}
 
 	public class Tile
@@ -260,7 +310,11 @@ namespace Final_MineSweeper
 				state = ClickedState.clicked;
 				if (bombsNear == 0)
 				{
-					neighbours.ForEach((Tile t) => t.Click(new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0)));
+					neighbours.ForEach(
+						(Tile t) => {
+							t.Click(new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
+						}
+					);
 				}
 			}
 			else if (state == ClickedState.unClicked && e.Button == MouseButtons.Right)
