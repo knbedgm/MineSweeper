@@ -12,17 +12,23 @@ namespace Final_MineSweeper
 {
 	public partial class Form1 : Form
 	{
-		/// <summary>
-		/// delegate function that is called with a tile input
-		/// </summary>
-		/// <param name="t">Tile</param>
-		public delegate void tileCallback(Tile t);
 		public Form1()
 		{
 			InitializeComponent();
 		}
 
-		// list of a list of tiles 
+		#region Global Variables
+
+
+		/// <summary>
+		/// delegate function that is called with a tile input
+		/// </summary>
+		/// <param name="t">Tile</param>
+		public delegate void tileCallback(Tile t);
+
+		/// <summary>
+		/// list of a list of the tiles in the game
+		/// </summary>
 		List<List<Tile>> mineField = new List<List<Tile>>();
 		
 		// ints
@@ -36,19 +42,13 @@ namespace Final_MineSweeper
 		bool running = false; // is the game running
 
 		DateTime startTime = DateTime.MinValue; // game start time, is set to MinValue when clock not running
-		/// <summary>
-		/// on Load
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void Form1_Load(object sender, EventArgs e)
-		{
-			// setup the minefield array so it doesn't fail when trying to draw
-			NewMinefield();
-		}
+
+		#endregion
+
+		#region Functions
 
 		/// <summary>
-		/// setup a new game
+		/// Setup a new game
 		/// </summary>
 		public void NewGame()
 		{
@@ -79,6 +79,224 @@ namespace Final_MineSweeper
 		}
 
 		/// <summary>
+		/// Places the correct number of mines on the board
+		/// Does not clear previously placed mines from the field
+		/// </summary>
+		public void GenerateMines()
+		{
+			int bombsAdded = 0; // counter for number of bombs placed
+			Random r = new Random();
+
+			// while the number of mines placed is less than the number that should be placed
+			while (bombsAdded < mineCount)
+			{
+				// get new random position
+				int x = r.Next(0, height);
+				int y = r.Next(0, width);
+
+				// if it isnt already a bomb
+				if (!mineField[x][y].isBomb)
+				{
+					// set the tile as a bomb
+					mineField[x][y].isBomb = true;
+					bombsAdded++;
+				}
+			}
+		}
+
+		/// <summary>
+		/// loops over each tile in the field and adds its neighbours to the tiles neighbours array
+		/// </summary>
+		public void AddNeighbours()
+		{
+			mineField.ForEach((List<Tile> col) => {
+				col.ForEach((Tile t) => {
+					// for each tile add the tiles neighbours
+					ForNeighbors(t, t.AddNeighbour);
+				});
+			});
+		}
+
+		/// <summary>
+		/// Loops over the minefield array and counts the number of flags that havent been used
+		/// </summary>
+		/// <returns></returns>
+		public int CalculateRemainingFlags()
+		{
+			int flags = mineCount; // set the flag counter to max value (number of mines)
+			mineField.ForEach((List<Tile> col) => {
+				col.ForEach((Tile t) => { // loop over each tile
+										  // if the tile is flaged
+					if (t.state == Tile.ClickedState.flagged)
+						flags--; // decrement flag counter
+				});
+			});
+			return flags;
+		}
+
+		/// <summary>
+		/// checks the passed tile and executes passed callback with each neighbour tile as parameter
+		/// </summary>
+		/// <param name="tile">Center Tile</param>
+		/// <param name="callback">function called for each of tile's neighbours</param>
+		public void ForNeighbors(Tile tile, tileCallback callback)
+		{
+			// in this case there is 9 different possibilites
+
+			// if the tile is in the top right corner
+			if (tile.x == 0 && tile.y == 0)
+			{
+				// run calbacks
+				callback(mineField[tile.x + 1][tile.y]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x][tile.y + 1]);
+			}
+			else if (tile.x == 0 && tile.y == height - 1) // tile is in the bottom right corner
+			{
+				// run calbacks
+				callback(mineField[tile.x + 1][tile.y]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x][tile.y - 1]);
+			}
+			else if (tile.x == width - 1 && tile.y == 0) // tile is in the top left corner
+			{
+				// run calbacks
+				callback(mineField[tile.x - 1][tile.y]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x][tile.y + 1]);
+			}
+			else if (tile.x == width - 1 && tile.y == height - 1) // tile is in the bottom left corner
+			{
+				// run calbacks
+				callback(mineField[tile.x - 1][tile.y]);
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x][tile.y - 1]);
+			}
+			else if (tile.x == 0) // tile is in the top row
+			{
+				// run calbacks
+				callback(mineField[tile.x][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x][tile.y + 1]);
+			}
+			else if (tile.x == width - 1) // tile is in the bottom row
+			{
+				// run calbacks
+				callback(mineField[tile.x][tile.y - 1]);
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x - 1][tile.y]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x][tile.y + 1]);
+			}
+			else if (tile.y == 0) // tile is in the right collumn
+			{
+				// run calbacks
+				callback(mineField[tile.x - 1][tile.y]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x][tile.y + 1]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x + 1][tile.y]);
+			}
+			else if (tile.y == height - 1) // tile is in the left collumn
+			{
+				// run calbacks
+				callback(mineField[tile.x - 1][tile.y]);
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y]);
+			}
+			else // tile is in the center
+			{
+				// run calbacks
+				callback(mineField[tile.x - 1][tile.y - 1]);
+				callback(mineField[tile.x][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y - 1]);
+				callback(mineField[tile.x + 1][tile.y]);
+				callback(mineField[tile.x + 1][tile.y + 1]);
+				callback(mineField[tile.x][tile.y + 1]);
+				callback(mineField[tile.x - 1][tile.y + 1]);
+				callback(mineField[tile.x - 1][tile.y]);
+			}
+		}
+
+		/// <summary>
+		/// Checks if the game should be ended
+		/// </summary>
+		public void CheckGameOver()
+		{
+			bool loss = false;
+			bool win = true;
+			mineField.ForEach((List<Tile> col) => {
+				col.ForEach((Tile t) => {
+					if (t.isBomb && t.state == Tile.ClickedState.clicked)
+					{ // if a bomb is clicked
+						loss = true; // you have loss
+
+					}
+					if (!t.isBomb && t.state != Tile.ClickedState.clicked)
+					{ // if the tile is not a bomb and has not been opened
+						win = false; // you haven't won yet
+					}
+				});
+			});
+
+			if (loss)
+			{
+				// click each tile to open them all
+				mineField.ForEach((List<Tile> col) => {
+					col.ForEach((Tile t) => {
+						t.Click(new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0));
+					});
+				});
+
+				canvas.Invalidate(); // update canvas
+
+				running = false; // stop running game
+
+				timer1.Stop(); // stop timer
+				DateTime now = DateTime.Now; // get current time
+				TimeSpan time = now.Subtract(startTime); // subtract start time from current time
+
+				MessageBox.Show(String.Format("You lost the game in {0:0.###} seconds", time.TotalSeconds), "You Lost", MessageBoxButtons.OK, MessageBoxIcon.Error); // Message displaying you loss and your time
+			}
+			else if (win)
+			{
+				running = false; // stop running game
+
+				timer1.Stop(); // stop timer
+				DateTime now = DateTime.Now; // get current time
+				TimeSpan time = now.Subtract(startTime); // subtract start time from current time
+
+				bool recordSet = false;
+				if (time.CompareTo(highscore) == -1)
+				{
+					recordSet = true;
+					highscore = time;
+				}
+
+				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!\r\n{1}", time.TotalSeconds, recordSet ? "That's a new highscore!" : $"The current highscore is {highscore.TotalSeconds.ToString("0.###")}"), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information); // Message displaying you won and your time
+			}
+		}
+
+		#endregion
+
+		#region Events
+
+		/// <summary>
+		/// on Load
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void Form1_Load(object sender, EventArgs e)
+		{
+			// setup the minefield array so it doesn't fail when trying to draw
+			NewMinefield();
+		}
+
+		/// <summary>
 		/// Canvas on paint listener
 		/// </summary>
 		/// <param name="sender">sender object</param>
@@ -92,29 +310,6 @@ namespace Final_MineSweeper
 				});
 			});
 
-		}
-
-		/// <summary>
-		/// Places the correct number of mines on the board
-		/// Does not clear previously placed mines from the field
-		/// </summary>
-		public void GenerateMines() {
-			int bombsAdded = 0; // counter for number of bombs placed
-			Random r = new Random(); 
-
-			// while the number of mines placed is less than the number that should be placed
-			while (bombsAdded < mineCount) {
-				// get new random position
-				int x = r.Next(0,height);
-				int y = r.Next(0,width);
-
-				// if it isnt already a bomb
-				if (!mineField[x][y].isBomb) {
-					// set the tile as a bomb
-					mineField[x][y].isBomb = true;
-					bombsAdded++;
-				}
-			}
 		}
 
 		/// <summary>
@@ -136,12 +331,12 @@ namespace Final_MineSweeper
 
 			//find tile clicked
 			int x, y;
-			x = e.X/(Tile.size);
-			y = e.Y/(Tile.size);
+			x = e.X / (Tile.size);
+			y = e.Y / (Tile.size);
 
 			// tell the tile it was clicked
 			mineField[x][y].Click(e);
-			
+
 			//calculate the number of flags remaining and display that to the user
 			flagsRemaining = CalculateRemainingFlags();
 			lblFlags.Text = flagsRemaining.ToString();
@@ -156,7 +351,7 @@ namespace Final_MineSweeper
 		}
 
 		/// <summary>
-		/// Called every 0.1 seconds to update the timer display
+		/// Called every 0.1 seconds by the timer to update the timer display
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
@@ -169,209 +364,20 @@ namespace Final_MineSweeper
 			TimeSpan time = now.Subtract(startTime);
 			lblTimer.Text = Math.Round(time.TotalSeconds).ToString();
 		}
-
-		/// <summary>
-		/// loops over each tile in the field and adds its neighbours to the tiles neighbours array
-		/// </summary>
-		public void AddNeighbours()
-		{
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => {
-					// for each tile add the tiles neighbours
-					ForNeighbors(t, t.AddNeighbour);
-				});
-			});
-		}
-
 		private void showHighscoreToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			MessageBox.Show($"The current highscore is {highscore.TotalSeconds.ToString("0.###")}", "Highscore", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
-		/// <summary>
-		/// Loops over the minefield array and counts the number of flags that havent been used
-		/// </summary>
-		/// <returns></returns>
-		public int CalculateRemainingFlags()
-		{
-			int flags = mineCount; // set the flag counter to max value (number of mines)
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => { // loop over each tile
-					// if the tile is flaged
-					if (t.state == Tile.ClickedState.flagged)
-						flags--; // decrement flag counter
-				});
-			});
-			return flags;
-		}
-
-		/// <summary>
-		/// checks the passed tile and executes passed callback with each neighbour tile as parameter
-		/// </summary>
-		/// <param name="tile">Center Tile</param>
-		/// <param name="callback">function called for each of tile's neighbours</param>
-		public void ForNeighbors(Tile tile, tileCallback callback)
-		{
-			// in this case there is 9 different possibilites
-
-			// if the tile is in the top right corner
-			if (tile.x == 0 && tile.y == 0) 
-			{
-				// run calbacks
-				callback(mineField[tile.x + 1][tile.y    ]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x    ][tile.y+1]);
-			}
-			else if (tile.x == 0 && tile.y == height - 1) // tile is in the bottom right corner
-			{
-				// run calbacks
-				callback(mineField[tile.x + 1][tile.y    ]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x    ][tile.y - 1]);
-			}
-			else if (tile.x == width - 1 && tile.y == 0) // tile is in the top left corner
-			{
-				// run calbacks
-				callback(mineField[tile.x - 1][tile.y    ]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x    ][tile.y + 1]);
-			}
-			else if (tile.x == width - 1 && tile.y == height - 1) // tile is in the bottom left corner
-			{
-				// run calbacks
-				callback(mineField[tile.x - 1][tile.y    ]);
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x    ][tile.y - 1]);
-			}
-			else if (tile.x == 0) // tile is in the top row
-			{
-				// run calbacks
-				callback(mineField[tile.x    ][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y    ]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x    ][tile.y + 1]);
-			}
-			else if (tile.x == width - 1) // tile is in the bottom row
-			{
-				// run calbacks
-				callback(mineField[tile.x    ][tile.y - 1]);
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x - 1][tile.y    ]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x    ][tile.y + 1]);
-			}
-			else if (tile.y == 0) // tile is in the right collumn
-			{
-				// run calbacks
-				callback(mineField[tile.x - 1][tile.y    ]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x    ][tile.y + 1]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x + 1][tile.y    ]);
-			}
-			else if (tile.y == height - 1) // tile is in the left collumn
-			{
-				// run calbacks
-				callback(mineField[tile.x - 1][tile.y    ]);
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x    ][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y    ]);
-			}
-			else // tile is in the center
-			{
-				// run calbacks
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x    ][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y    ]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x    ][tile.y + 1]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x - 1][tile.y    ]);
-			}
-		}
-
-		/// <summary>
-		/// Checks if the game should be ended
-		/// </summary>
-		public void CheckGameOver()
-		{
-			bool loss = false;
-			bool win = true;
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => {
-					if (t.isBomb && t.state == Tile.ClickedState.clicked){ // if a bomb is clicked
-						loss = true; // you have loss
-
-					} 
-					if (!t.isBomb && t.state != Tile.ClickedState.clicked){ // if the tile is not a bomb and has not been opened
-						win = false; // you haven't won yet
-					}
-				});
-			});
-
-			if (loss) {
-				// click each tile to open them all
-				mineField.ForEach((List<Tile> col) => {
-					col.ForEach((Tile t) => {
-						t.Click(new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0));	
-					});
-				});
-				
-				canvas.Invalidate(); // update canvas
-
-				running = false; // stop running game
-
-				timer1.Stop(); // stop timer
-				DateTime now = DateTime.Now; // get current time
-				TimeSpan time = now.Subtract(startTime); // subtract start time from current time
-
-				MessageBox.Show(String.Format("You lost the game in {0:0.###} seconds", time.TotalSeconds), "You Lost", MessageBoxButtons.OK, MessageBoxIcon.Error); // Message displaying you loss and your time
-			}
-			else if (win){ 
-				running = false; // stop running game
-
-				timer1.Stop(); // stop timer
-				DateTime now = DateTime.Now; // get current time
-				TimeSpan time = now.Subtract(startTime); // subtract start time from current time
-
-				bool recordSet = false;
-				if (time.CompareTo(highscore) == -1)
-				{
-					recordSet = true;
-					highscore = time;
-				}
-
-				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!\r\n{1}", time.TotalSeconds, recordSet ? "That's a new highscore!" : $"The current highscore is {highscore.TotalSeconds.ToString("0.###")}"), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information); // Message displaying you won and your time
-			}
-		}
+		#endregion
 
 	}
 
 	/// <summary>
-	/// Tile Class to hold data and methods for each tile
+	/// Class to hold data and methods for each tile
 	/// </summary>
 	public class Tile
 	{
-		public enum ClickedState 
-		{
-			// 3 clicked state types
-			unClicked,
-			clicked,
-			flagged
-		}
-
-		public List<Tile> neighbours = new List<Tile>(); // list of neighbour tiles
-
-		public ClickedState state = ClickedState.unClicked; // default clicked state is unclicked
-		public bool isBomb = false; // is the tile a bomb
-		public byte bombsNear = 0; // number of bombs surounding the tile
-
-		public static int size = 30;  // size of the tile (30x30) when drawn
-		public int x, y; // tile's location on the game board 
-
 		/// <summary>
 		/// Initalises the tile object
 		/// </summary>
@@ -383,6 +389,31 @@ namespace Final_MineSweeper
 			this.x = x;
 			this.y = y;
 		}
+
+		/// <summary>
+		/// Possible tile states
+		/// </summary>
+		public enum ClickedState
+		{
+			unClicked,
+			clicked,
+			flagged
+		}
+
+		#region Global Variables
+
+		public List<Tile> neighbours = new List<Tile>(); // list of neighbour tiles
+
+		public ClickedState state = ClickedState.unClicked; // default clicked state is unclicked
+		public bool isBomb = false; // is the tile a bomb
+		public byte bombsNear = 0; // number of bombs surounding the tile
+
+		public static int size = 30;  // size of the tile (30x30) when drawn
+		public int x, y; // tile's location on the game board 
+
+		#endregion
+
+		#region Functions
 
 		/// <summary>
         /// Calculates the danger lever (mines around the tile) with the neighbour tiles
@@ -540,7 +571,10 @@ namespace Final_MineSweeper
 
 
 			}
-		}	
+		}
+
+		#endregion
+
 	}
-   
+
 }
