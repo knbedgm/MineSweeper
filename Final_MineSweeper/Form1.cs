@@ -37,7 +37,8 @@ namespace Final_MineSweeper
 			mineCount = 10, // number of mines in the game
 			flagsRemaining = 99; // number of flags that are left
 
-		TimeSpan highscore = new TimeSpan(0,0,99999);
+
+		TimeSpan highscore = new TimeSpan(long.MaxValue); // highscore, set to long.MaxValue when not set
 
 		bool running = false; // is the game running
 
@@ -271,12 +272,12 @@ namespace Final_MineSweeper
 				TimeSpan time = now.Subtract(startTime); // subtract start time from current time
 
 				bool recordSet = false;
-				if (time.CompareTo(highscore) == -1)
+				if (time.CompareTo(highscore) == -1) // if time is less than highscore
 				{
 					recordSet = true;
 					highscore = time;
 				}
-
+				// this lines a little confusing. the input for {1} in string.format comes from a turnary operator that either tells you the current record or that you set a new one based on if you set a record.
 				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!\r\n{1}", time.TotalSeconds, recordSet ? "That's a new highscore!" : $"The current highscore is {highscore.TotalSeconds.ToString("0.###")}"), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information); // Message displaying you won and your time
 			}
 		}
@@ -366,7 +367,10 @@ namespace Final_MineSweeper
 		}
 		private void showHighscoreToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show($"The current highscore is {highscore.TotalSeconds.ToString("0.###")}", "Highscore", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			if (highscore.Ticks == long.MaxValue)
+				MessageBox.Show("No score has been set yet.", "Highscore", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			else
+				MessageBox.Show($"The current highscore is {highscore.TotalSeconds.ToString("0.###")}", "Highscore", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 		#endregion
