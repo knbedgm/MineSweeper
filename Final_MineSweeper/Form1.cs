@@ -246,10 +246,10 @@ namespace Final_MineSweeper
 
 			if (loss)
 			{
-				// click each tile to open them all
+				// open every tile to show user the correct positions
 				mineField.ForEach((List<Tile> col) => {
 					col.ForEach((Tile t) => {
-						t.Click(new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0));
+						t.state = Tile.ClickedState.clicked;
 					});
 				});
 
@@ -261,10 +261,12 @@ namespace Final_MineSweeper
 				DateTime now = DateTime.Now; // get current time
 				TimeSpan time = now.Subtract(startTime); // subtract start time from current time
 
-				MessageBox.Show(String.Format("You lost the game in {0:0.###} seconds", time.TotalSeconds), "You Lost", MessageBoxButtons.OK, MessageBoxIcon.Error); // Message displaying you loss and your time
+				MessageBox.Show(String.Format("You lost the game after {0:0.###} seconds", time.TotalSeconds), "You Lost", MessageBoxButtons.OK, MessageBoxIcon.Error); // Message displaying you loss and your time
 			}
 			else if (win)
 			{
+				// dont need to clicked the tiles here because if they've won they already done that for us
+
 				running = false; // stop running game
 
 				timer1.Stop(); // stop timer
