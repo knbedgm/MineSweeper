@@ -280,7 +280,7 @@ namespace Final_MineSweeper
 					highscore = time;
 				}
 				// this lines a little confusing. the input for {1} in string.format comes from a turnary operator that either tells you the current record or that you set a new one based on if you set a record.
-				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!\r\n{1}", time.TotalSeconds, recordSet ? "That's a new highscore!" : $"The current highscore is {highscore.TotalSeconds.ToString("0.###")}"), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information); // Message displaying you won and your time
+				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!\r\n{1}", time.TotalSeconds, recordSet ? "That's a new highscore!" : $"The current highscore is {highscore.TotalSeconds.ToString("0.###")} seconds."), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information); // Message displaying you won and your time
 			}
 		}
 
