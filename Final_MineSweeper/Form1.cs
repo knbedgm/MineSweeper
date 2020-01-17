@@ -31,7 +31,7 @@ namespace Final_MineSweeper
 			mineCount = 10, // number of mines in the game
 			flagsRemaining = 99; // number of flags that are left
 
-		TimeSpan highscore = new TimeSpan(999, 9999, 999);
+		TimeSpan highscore = new TimeSpan(0,0,99999);
 
 		bool running = false; // is the game running
 
@@ -183,6 +183,11 @@ namespace Final_MineSweeper
 			});
 		}
 
+		private void showHighscoreToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show($"The current highscore is {highscore.TotalSeconds.ToString("0.###")}", "Highscore", MessageBoxButtons.OK, MessageBoxIcon.Information);
+		}
+
 		/// <summary>
 		/// Loops over the minefield array and counts the number of flags that havent been used
 		/// </summary>
@@ -332,7 +337,14 @@ namespace Final_MineSweeper
 				DateTime now = DateTime.Now; // get current time
 				TimeSpan time = now.Subtract(startTime); // subtract start time from current time
 
-				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!", time.TotalSeconds), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information); // Message displaying you won and your time
+				bool recordSet = false;
+				if (time.CompareTo(highscore) == -1)
+				{
+					recordSet = true;
+					highscore = time;
+				}
+
+				MessageBox.Show(String.Format("You won the game in {0:0.###} seconds!\r\n{1}", time.TotalSeconds, recordSet ? "That's a new highscore!" : $"The current highscore is {highscore.TotalSeconds.ToString("0.###")}"), "You Won!", MessageBoxButtons.OK, MessageBoxIcon.Information); // Message displaying you won and your time
 			}
 		}
 
