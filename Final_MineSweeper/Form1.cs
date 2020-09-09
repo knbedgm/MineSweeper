@@ -73,7 +73,7 @@ namespace Final_MineSweeper.Forms
 		/// </summary>
 		public void NewMinefield()
 		{
-			field = new MineField(height, width);
+			field = new MineField(height, width, mineCount);
 			mineField.Clear(); // clear minefield
 			for (int i = 0; i < width; i++) // for each collumn
 			{
