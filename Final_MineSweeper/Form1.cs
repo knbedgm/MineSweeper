@@ -30,13 +30,18 @@ namespace Final_MineSweeper.Forms
 		/// <summary>
 		/// list of a list of the tiles in the game
 		/// </summary>
-		List<List<Tile>> mineField = new List<List<Tile>>();
-		
+		readonly List<List<Tile>> mineField = new List<List<Tile>>();
+		MineField field;
+
 		// ints
+#pragma warning disable IDE0044 // Add readonly modifier
+
 		int height = 9, // height of game board
 			width = 9, // width of game board
 			mineCount = 10, // number of mines in the game
 			flagsRemaining = 99; // number of flags that are left
+
+#pragma warning restore IDE0044 // Add readonly modifier
 
 
 		TimeSpan highscore = new TimeSpan(long.MaxValue); // highscore, set to long.MaxValue when not set
@@ -68,6 +73,7 @@ namespace Final_MineSweeper.Forms
 		/// </summary>
 		public void NewMinefield()
 		{
+			field = new MineField(height, width);
 			mineField.Clear(); // clear minefield
 			for (int i = 0; i < width; i++) // for each collumn
 			{
@@ -97,10 +103,10 @@ namespace Final_MineSweeper.Forms
 				int y = r.Next(0, width);
 
 				// if it isnt already a bomb
-				if (!mineField[x][y].isBomb)
+				if (!mineField[x][y].IsBomb)
 				{
 					// set the tile as a bomb
-					mineField[x][y].isBomb = true;
+					mineField[x][y].IsBomb = true;
 					bombsAdded++;
 				}
 			}
@@ -129,7 +135,7 @@ namespace Final_MineSweeper.Forms
 			mineField.ForEach((List<Tile> col) => {
 				col.ForEach((Tile t) => { // loop over each tile
 										  // if the tile is flaged
-					if (t.state == Tile.TileState.flagged)
+					if (t.State == Tile.TileState.flagged)
 						flags--; // decrement flag counter
 				});
 			});
@@ -146,81 +152,81 @@ namespace Final_MineSweeper.Forms
 			// in this case there is 9 different possibilites
 
 			// if the tile is in the top right corner
-			if (tile.x == 0 && tile.y == 0)
+			if (tile.X == 0 && tile.Y == 0)
 			{
 				// run calbacks
-				callback(mineField[tile.x + 1][tile.y]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x][tile.y + 1]);
+				callback(mineField[tile.X + 1][tile.Y]);
+				callback(mineField[tile.X + 1][tile.Y + 1]);
+				callback(mineField[tile.X][tile.Y + 1]);
 			}
-			else if (tile.x == 0 && tile.y == height - 1) // tile is in the bottom right corner
+			else if (tile.X == 0 && tile.Y == height - 1) // tile is in the bottom right corner
 			{
 				// run calbacks
-				callback(mineField[tile.x + 1][tile.y]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x][tile.y - 1]);
+				callback(mineField[tile.X + 1][tile.Y]);
+				callback(mineField[tile.X + 1][tile.Y - 1]);
+				callback(mineField[tile.X][tile.Y - 1]);
 			}
-			else if (tile.x == width - 1 && tile.y == 0) // tile is in the top left corner
+			else if (tile.X == width - 1 && tile.Y == 0) // tile is in the top left corner
 			{
 				// run calbacks
-				callback(mineField[tile.x - 1][tile.y]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x][tile.y + 1]);
+				callback(mineField[tile.X - 1][tile.Y]);
+				callback(mineField[tile.X - 1][tile.Y + 1]);
+				callback(mineField[tile.X][tile.Y + 1]);
 			}
-			else if (tile.x == width - 1 && tile.y == height - 1) // tile is in the bottom left corner
+			else if (tile.X == width - 1 && tile.Y == height - 1) // tile is in the bottom left corner
 			{
 				// run calbacks
-				callback(mineField[tile.x - 1][tile.y]);
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x][tile.y - 1]);
+				callback(mineField[tile.X - 1][tile.Y]);
+				callback(mineField[tile.X - 1][tile.Y - 1]);
+				callback(mineField[tile.X][tile.Y - 1]);
 			}
-			else if (tile.x == 0) // tile is in the top row
+			else if (tile.X == 0) // tile is in the top row
 			{
 				// run calbacks
-				callback(mineField[tile.x][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x][tile.y + 1]);
+				callback(mineField[tile.X][tile.Y - 1]);
+				callback(mineField[tile.X + 1][tile.Y - 1]);
+				callback(mineField[tile.X + 1][tile.Y]);
+				callback(mineField[tile.X + 1][tile.Y + 1]);
+				callback(mineField[tile.X][tile.Y + 1]);
 			}
-			else if (tile.x == width - 1) // tile is in the bottom row
+			else if (tile.X == width - 1) // tile is in the bottom row
 			{
 				// run calbacks
-				callback(mineField[tile.x][tile.y - 1]);
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x - 1][tile.y]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x][tile.y + 1]);
+				callback(mineField[tile.X][tile.Y - 1]);
+				callback(mineField[tile.X - 1][tile.Y - 1]);
+				callback(mineField[tile.X - 1][tile.Y]);
+				callback(mineField[tile.X - 1][tile.Y + 1]);
+				callback(mineField[tile.X][tile.Y + 1]);
 			}
-			else if (tile.y == 0) // tile is in the right collumn
+			else if (tile.Y == 0) // tile is in the right collumn
 			{
 				// run calbacks
-				callback(mineField[tile.x - 1][tile.y]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x][tile.y + 1]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x + 1][tile.y]);
+				callback(mineField[tile.X - 1][tile.Y]);
+				callback(mineField[tile.X - 1][tile.Y + 1]);
+				callback(mineField[tile.X][tile.Y + 1]);
+				callback(mineField[tile.X + 1][tile.Y + 1]);
+				callback(mineField[tile.X + 1][tile.Y]);
 			}
-			else if (tile.y == height - 1) // tile is in the left collumn
+			else if (tile.Y == height - 1) // tile is in the left collumn
 			{
 				// run calbacks
-				callback(mineField[tile.x - 1][tile.y]);
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y]);
+				callback(mineField[tile.X - 1][tile.Y]);
+				callback(mineField[tile.X - 1][tile.Y - 1]);
+				callback(mineField[tile.X][tile.Y - 1]);
+				callback(mineField[tile.X + 1][tile.Y - 1]);
+				callback(mineField[tile.X + 1][tile.Y]);
 			}
 			else // tile is in the center
 			{
 				// run calbacks
-				callback(mineField[tile.x - 1][tile.y - 1]);
-				callback(mineField[tile.x][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y - 1]);
-				callback(mineField[tile.x + 1][tile.y]);
-				callback(mineField[tile.x + 1][tile.y + 1]);
-				callback(mineField[tile.x][tile.y + 1]);
-				callback(mineField[tile.x - 1][tile.y + 1]);
-				callback(mineField[tile.x - 1][tile.y]);
+				callback(mineField[tile.X - 1][tile.Y - 1]);
+				callback(mineField[tile.X][tile.Y - 1]);
+				callback(mineField[tile.X + 1][tile.Y - 1]);
+				callback(mineField[tile.X + 1][tile.Y]);
+				callback(mineField[tile.X + 1][tile.Y + 1]);
+				callback(mineField[tile.X][tile.Y + 1]);
+				callback(mineField[tile.X - 1][tile.Y + 1]);
+				callback(mineField[tile.X - 1][tile.Y]);
 			}
 		}
 
@@ -233,12 +239,12 @@ namespace Final_MineSweeper.Forms
 			bool win = true;
 			mineField.ForEach((List<Tile> col) => {
 				col.ForEach((Tile t) => {
-					if (t.isBomb && t.state == Tile.TileState.revealed)
+					if (t.IsBomb && t.State == Tile.TileState.revealed)
 					{ // if a bomb is clicked
 						loss = true; // you have loss
 
 					}
-					if (!t.isBomb && t.state != Tile.TileState.revealed)
+					if (!t.IsBomb && t.State != Tile.TileState.revealed)
 					{ // if the tile is not a bomb and has not been opened
 						win = false; // you haven't won yet
 					}
@@ -250,7 +256,7 @@ namespace Final_MineSweeper.Forms
 				// open every tile to show user the correct positions
 				mineField.ForEach((List<Tile> col) => {
 					col.ForEach((Tile t) => {
-						t.state = Tile.TileState.revealed;
+						t.State = Tile.TileState.revealed;
 					});
 				});
 
@@ -368,7 +374,7 @@ namespace Final_MineSweeper.Forms
 			TimeSpan time = now.Subtract(startTime);
 			lblTimer.Text = Math.Round(time.TotalSeconds).ToString();
 		}
-		private void showHighscoreToolStripMenuItem_Click(object sender, EventArgs e)
+		private void ShowHighscoreToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (highscore.Ticks == long.MaxValue)
 				MessageBox.Show("No score has been set yet.", "Highscore", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -589,45 +595,47 @@ namespace Final_MineSweeper.Forms
 		public static int size = 30;  // size of the tile (30x30) when drawn
 		public static void Draw(this Tile tile, Graphics g)
 		{
-			if (tile.state.Equals(Tile.TileState.hidden)) // if clicked state is unclicked
+			if (tile.State.Equals(Tile.TileState.hidden)) // if clicked state is unclicked
 			{
 				// Fill
 				SolidBrush b = new SolidBrush(Color.FromArgb(192, 192, 192));
-				g.FillRectangle(b, tile.x * size, tile.y * size, size, size);
+				g.FillRectangle(b, tile.X * size, tile.Y * size, size, size);
 
 				// Border
+#pragma warning disable IDE0017 // Simplify object initialization
 				Pen p = new Pen(Color.Black, 2);
+#pragma warning restore IDE0017 // Simplify object initialization
 
 				p.Color = Color.FromArgb(126, 126, 126);
-				g.DrawLine(p, tile.x * size + size - 1, tile.y * size, tile.x * size + size - 1, tile.y * size + size); // draw right edge
-				g.DrawLine(p, tile.x * size, tile.y * size + size - 1, tile.x * size + size, tile.y * size + size - 1); // draw bottom edge
+				g.DrawLine(p, tile.X * size + size - 1, tile.Y * size, tile.X * size + size - 1, tile.Y * size + size); // draw right edge
+				g.DrawLine(p, tile.X * size, tile.Y * size + size - 1, tile.X * size + size, tile.Y * size + size - 1); // draw bottom edge
 
 				p.Color = Color.White;
-				g.DrawLine(p, tile.x * size + 1, tile.y * size, tile.x * size + 1, tile.y * size + size); // draw left edge
-				g.DrawLine(p, tile.x * size, tile.y * size + 1, tile.x * size + size, tile.y * size + 1); // draw top edge
+				g.DrawLine(p, tile.X * size + 1, tile.Y * size, tile.X * size + 1, tile.Y * size + size); // draw left edge
+				g.DrawLine(p, tile.X * size, tile.Y * size + 1, tile.X * size + size, tile.Y * size + 1); // draw top edge
 
 			}
-			else if (tile.state.Equals(Tile.TileState.revealed)) // if clicked state is clicked
+			else if (tile.State.Equals(Tile.TileState.revealed)) // if clicked state is clicked
 			{
 				// Fill
 				SolidBrush b = new SolidBrush(Color.FromArgb(192, 192, 192));
-				g.FillRectangle(b, tile.x * size, tile.y * size, size, size);
+				g.FillRectangle(b, tile.X * size, tile.Y * size, size, size);
 
 				// Border
 				Pen p = new Pen(Color.FromArgb(133, 133, 133), 2);
 
-				g.DrawLine(p, tile.x * size + 1, tile.y * size, tile.x * size + 1, tile.y * size + size); // draw left edge
-				g.DrawLine(p, tile.x * size, tile.y * size + 1, tile.x * size + size, tile.y * size + 1); // draw top edge
+				g.DrawLine(p, tile.X * size + 1, tile.Y * size, tile.X * size + 1, tile.Y * size + size); // draw left edge
+				g.DrawLine(p, tile.X * size, tile.Y * size + 1, tile.X * size + size, tile.Y * size + 1); // draw top edge
 
-				if (tile.isBomb)
+				if (tile.IsBomb)
 				{
 					// Draw Bomb
 					b.Color = Color.Black;
-					g.FillEllipse(b, tile.x * size + 5, tile.y * size + 5, size - 10, size - 10);
+					g.FillEllipse(b, tile.X * size + 5, tile.Y * size + 5, size - 10, size - 10);
 				}
 				else
 				{
-					switch (tile.bombsNear) // make text correct color
+					switch (tile.BombsNear) // make text correct color
 					{
 						case 1:
 							b.Color = Color.Blue;
@@ -657,29 +665,31 @@ namespace Final_MineSweeper.Forms
 							break;
 					}
 
-					g.DrawString(tile.bombsNear.ToString(), new Font("Arial", 18), b, new RectangleF(tile.x * size, tile.y * size, size - 1, size - 1));
+					g.DrawString(tile.BombsNear.ToString(), new Font("Arial", 18), b, new RectangleF(tile.X * size, tile.Y * size, size - 1, size - 1));
 				}
 			}
-			else if (tile.state.Equals(Tile.TileState.flagged)) // if clicked state is flagged
+			else if (tile.State.Equals(Tile.TileState.flagged)) // if clicked state is flagged
 			{
 				// fill
 				SolidBrush b = new SolidBrush(Color.FromArgb(192, 192, 192));
-				g.FillRectangle(b, tile.x * size, tile.y * size, size, size);
+				g.FillRectangle(b, tile.X * size, tile.Y * size, size, size);
 
 				// Border
+#pragma warning disable IDE0017 // Simplify object initialization
 				Pen p = new Pen(Color.Black, 2);
+#pragma warning restore IDE0017 // Simplify object initialization
 
 				p.Color = Color.FromArgb(126, 126, 126);
-				g.DrawLine(p, tile.x * size + size - 1, tile.y * size, tile.x * size + size - 1, tile.y * size + size); // draw right edge
-				g.DrawLine(p, tile.x * size, tile.y * size + size - 1, tile.x * size + size, tile.y * size + size - 1); // draw bottom edge
+				g.DrawLine(p, tile.X * size + size - 1, tile.Y * size, tile.X * size + size - 1, tile.Y * size + size); // draw right edge
+				g.DrawLine(p, tile.X * size, tile.Y * size + size - 1, tile.X * size + size, tile.Y * size + size - 1); // draw bottom edge
 
 				p.Color = Color.White;
-				g.DrawLine(p, tile.x * size + 1, tile.y * size, tile.x * size + 1, tile.y * size + size); // draw left edge
-				g.DrawLine(p, tile.x * size, tile.y * size + 1, tile.x * size + size, tile.y * size + 1); // draw top edge
+				g.DrawLine(p, tile.X * size + 1, tile.Y * size, tile.X * size + 1, tile.Y * size + size); // draw left edge
+				g.DrawLine(p, tile.X * size, tile.Y * size + 1, tile.X * size + size, tile.Y * size + 1); // draw top edge
 
 				// Flags
 				b.Color = Color.Red;
-				g.FillEllipse(b, tile.x * size + 5, tile.y * size + 5, size - 10, size - 10);
+				g.FillEllipse(b, tile.X * size + 5, tile.Y * size + 5, size - 10, size - 10);
 
 
 			}
