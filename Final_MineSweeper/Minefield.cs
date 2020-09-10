@@ -28,17 +28,54 @@ namespace Final_MineSweeper.GameLogic
             Lose
         }
 
-        #region Getters and Setters
-        public Tile.TileState GetTileState(int x, int y) => tiles[x, y].State;
+        #region Tile Data Helpers
+
+        public TileData GetTileData(int x, int y)
+        {
+            return GetTileData(tiles[x, y]);
+        }
+        private TileData GetTileData(Tile t)
+        {
+            return t.ExtractData(State != GameState.Running);
+        }
         public void SetTileState(int x, int y, Tile.TileState state)
         {
+            //if (State == GameState.Win || State == GameState.Lose) return;
+            if (tiles[x, y].State == Tile.TileState.revealed) return;
             tiles[x, y].State = state;
             HandleTileStateChange(tiles[x, y]);
         }
-        public int GetTileDanger(int x, int y) => tiles[x, y].State == Tile.TileState.revealed ? tiles[x, y].BombsNear : -1;
+        public void SetTileState(TileData data, Tile.TileState state) => SetTileState(data.X, data.Y, state);
 
-        public int MineCount { get => tiles.Cast<Tile>().Count(t => t.IsBomb); }
-        public int FlagCount { get => tiles.Cast<Tile>().Count(t => t.State == Tile.TileState.flagged); }
+        public void OpenTile(TileData data)
+        {
+            if (data.State == Tile.TileState.hidden)
+                SetTileState(data, Tile.TileState.revealed);
+        }
+
+        public void FlagTile(TileData data)
+        {
+            if (data.State == Tile.TileState.hidden)
+                SetTileState(data, Tile.TileState.flagged);
+        }
+
+        public void UnFlagTile(TileData data)
+        {
+            if (data.State == Tile.TileState.flagged)
+                SetTileState(data, Tile.TileState.hidden);
+        }
+
+
+        public int MineCount { get {
+                if (generateMines) return generateMineCount;
+                return tiles.Cast<Tile>().Count(t => t.IsBomb); 
+            } }
+        public int FlagCount {
+            get => tiles.Cast<Tile>().Count(t => t.State == Tile.TileState.flagged); 
+        }
+        public int FlagsRemaining {
+            get => MineCount - FlagCount; 
+        }
         #endregion
 
         public MineField(int height, int width)
@@ -67,8 +104,7 @@ namespace Final_MineSweeper.GameLogic
                         return (t.X >= i - 1 &&
                                 t.X <= i + 1 &&
                                 t.Y >= j - 1 &&
-                                t.Y <= j + 1 &&
-                                (t.X != i && t.Y != j));
+                                t.Y <= j + 1);
                     })
                         .ToList().ForEach(t => tiles[i, j].AddNeighbour(t));
                 }
@@ -83,13 +119,23 @@ namespace Final_MineSweeper.GameLogic
         }
 
         #region Methods
-        private void ForEachTile(Action<Tile> del)
+        public void ForTileNeighbours(int x, int y, Action<int, int> del)
+        {
+            tiles[x, y].Neighbours.ForEach(t => del(t.X, t.Y));
+        }
+
+        public void ForTileNeighbours(TileData t, Action<TileData> del)
+        {
+            tiles[t.X, t.Y].Neighbours.ForEach(x => del(GetTileData(x)));
+        }
+
+        public void ForEachTile(Action<TileData> del)
         {
             for (int i = 0; i < tiles.GetLength(0); i++)
             {
                 for (int j = 0; j < tiles.GetLength(1); j++)
                 {
-                    del(tiles[i, j]);
+                    del(GetTileData(i, j));
                 }
             }
         }
@@ -101,7 +147,7 @@ namespace Final_MineSweeper.GameLogic
 
         private void HandleTileStateChange(Tile t)
         {
-            if (generateMines && State == GameState.Running)
+            if (generateMines && State == GameState.Running && t.State == Tile.TileState.revealed)
             {
                 generateMines = false;
 
@@ -109,7 +155,8 @@ namespace Final_MineSweeper.GameLogic
                 t.IsBomb = false;
                 t.Neighbours.ForEach(x =>
                 {
-                    x.State = Tile.TileState.revealed;
+                    if (x.State == Tile.TileState.hidden)
+                        x.State = Tile.TileState.revealed;
                     x.IsBomb = false;
                 });
 
@@ -124,11 +171,16 @@ namespace Final_MineSweeper.GameLogic
                     }
                 }
 
+                t.Neighbours.ForEach(x =>
+                {
+                    HandleTileStateChange(x);
+                });
+
             }
 
-            if (t.BombsNear == 0)
+            if (t.Danger == 0 && t.State == Tile.TileState.revealed)
             {
-                t.Neighbours.ForEach(x => SetTileState(x.X, x.Y, Tile.TileState.revealed));
+                t.Neighbours.ForEach(x => OpenTile(GetTileData(x)));
             }
 
             IsGameOver();
@@ -141,6 +193,7 @@ namespace Final_MineSweeper.GameLogic
 
         private void IsGameOver()
         {
+            if (State != GameState.Running) return;
             bool loss = false;
             bool win = true;
             tiles.Cast<Tile>().ToList().ForEach((Tile t) =>
@@ -158,6 +211,10 @@ namespace Final_MineSweeper.GameLogic
             if (loss) { State = GameState.Lose; }
             else if (win) { State = GameState.Win; }
         }
+
+
+
+
         #endregion
 
         #region Events
@@ -177,7 +234,7 @@ namespace Final_MineSweeper.GameLogic
 
         public class TileStateChangedEventArgs : EventArgs
         {
-            
+
             public int X;
             public int Y;
             public Tile.TileState newState;
@@ -190,6 +247,16 @@ namespace Final_MineSweeper.GameLogic
         #endregion
 
         #endregion
+    }
+
+    public class TileData
+    {
+        public Tile.TileState State;
+        public int Danger;
+        public int FlagsNear;
+        public bool IsBomb;
+        public int X;
+        public int Y;
     }
 }
 

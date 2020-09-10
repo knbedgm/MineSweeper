@@ -47,13 +47,13 @@
             // 
             // canvas
             // 
-            this.canvas.Location = new System.Drawing.Point(154, 162);
+            this.canvas.Location = new System.Drawing.Point(12, 70);
             this.canvas.Name = "canvas";
             this.canvas.Size = new System.Drawing.Size(270, 270);
             this.canvas.TabIndex = 0;
             this.canvas.TabStop = false;
             this.canvas.Paint += new System.Windows.Forms.PaintEventHandler(this.Canvas_Paint);
-            this.canvas.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Canvas_MouseClick);
+            this.canvas.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Canvas_MouseClick);
             // 
             // timer1
             // 
@@ -62,7 +62,7 @@
             // btnStart
             // 
             this.btnStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnStart.Location = new System.Drawing.Point(154, 435);
+            this.btnStart.Location = new System.Drawing.Point(12, 341);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(270, 34);
             this.btnStart.TabIndex = 1;
@@ -76,7 +76,7 @@
             this.lblTimer.BackColor = System.Drawing.Color.Transparent;
             this.lblTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTimer.ForeColor = System.Drawing.Color.Red;
-            this.lblTimer.Location = new System.Drawing.Point(386, 130);
+            this.lblTimer.Location = new System.Drawing.Point(244, 36);
             this.lblTimer.Name = "lblTimer";
             this.lblTimer.Size = new System.Drawing.Size(38, 25);
             this.lblTimer.TabIndex = 5;
@@ -89,7 +89,7 @@
             this.lblFlags.BackColor = System.Drawing.Color.Transparent;
             this.lblFlags.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFlags.ForeColor = System.Drawing.Color.Red;
-            this.lblFlags.Location = new System.Drawing.Point(196, 130);
+            this.lblFlags.Location = new System.Drawing.Point(54, 36);
             this.lblFlags.Name = "lblFlags";
             this.lblFlags.Size = new System.Drawing.Size(38, 25);
             this.lblFlags.TabIndex = 6;
@@ -99,7 +99,7 @@
             // 
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(346, 127);
+            this.pictureBox1.Location = new System.Drawing.Point(204, 33);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(36, 30);
             this.pictureBox1.TabIndex = 7;
@@ -109,7 +109,7 @@
             // 
             this.pictureBox2.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(154, 128);
+            this.pictureBox2.Location = new System.Drawing.Point(12, 34);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(36, 30);
             this.pictureBox2.TabIndex = 8;
@@ -121,7 +121,7 @@
             this.showHighscoreToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(596, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(294, 24);
             this.menuStrip1.TabIndex = 9;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -130,14 +130,14 @@
             this.showHighscoreToolStripMenuItem.Name = "showHighscoreToolStripMenuItem";
             this.showHighscoreToolStripMenuItem.Size = new System.Drawing.Size(105, 20);
             this.showHighscoreToolStripMenuItem.Text = "Show Highscore";
-            this.showHighscoreToolStripMenuItem.Click += new System.EventHandler(this.showHighscoreToolStripMenuItem_Click);
+            this.showHighscoreToolStripMenuItem.Click += new System.EventHandler(this.ShowHighscoreToolStripMenuItem_Click);
             // 
-            // Form1
+            // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
-            this.ClientSize = new System.Drawing.Size(596, 526);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(84)))), ((int)(((byte)(84)))), ((int)(((byte)(84)))));
+            this.ClientSize = new System.Drawing.Size(294, 428);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.lblFlags);
@@ -150,7 +150,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "Form1";
+            this.Name = "MainWindow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Minesweeper";
             this.Load += new System.EventHandler(this.Form1_Load);

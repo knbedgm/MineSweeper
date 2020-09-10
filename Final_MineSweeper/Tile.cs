@@ -31,12 +31,10 @@ namespace Final_MineSweeper.GameLogic
         #region Global Variables
 
         public List<Tile> Neighbours { get; private set; } = new List<Tile>(); // list of neighbour tiles
-
-        public MineField MineField;
-
         public TileState State { get; set; } = TileState.hidden; // default clicked state is unclicked
         public bool IsBomb { get; set; } = false; // is the tile a bomb
-        public int BombsNear { get { return Neighbours.Count(t => t.IsBomb); } } // number of bombs surounding the tile
+        public int Danger { get { return Neighbours.Count(t => t.IsBomb); } } // number of bombs surounding the tile
+        public int FlagsNear { get => Neighbours.Count(t => t.State == TileState.flagged); }
 
 
         public int X { get; private set; }
@@ -65,7 +63,7 @@ namespace Final_MineSweeper.GameLogic
             if (State == TileState.hidden && e.Button == MouseButtons.Left) // if state of mouse click is left mouse click
             {
                 State = TileState.revealed; // state of the clicked state is click
-                if (BombsNear == 0) // if bombs near is 0
+                if (Danger == 0) // if bombs near is 0
                 {
                     Neighbours.ForEach(
                         (Tile t) =>
@@ -88,14 +86,25 @@ namespace Final_MineSweeper.GameLogic
                 // open up minefields
                 int flagsNear = 0; // flags nearby is 0 
                 Neighbours.ForEach((Tile t) => { if (t.State == TileState.flagged) flagsNear++; }); // count how many flags are on the tiles surrounding this one
-                if (flagsNear == BombsNear) // if number of flags is equailvalent to bombs
+                if (flagsNear == Danger) // if number of flags is equailvalent to bombs
                 {
                     Neighbours.ForEach((Tile t) => t.Click(new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0))); // open up more tiles
                 }
             }
         }
 
-
+        public TileData ExtractData(bool ShowBomb)
+        {
+            return new TileData()
+            {
+                Danger = Danger,
+                IsBomb = ShowBomb ? IsBomb : false,
+                FlagsNear = FlagsNear,
+                State = State,
+                X = X,
+                Y = Y
+            };
+        }
 
         #endregion
 

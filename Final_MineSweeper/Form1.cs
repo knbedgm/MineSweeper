@@ -22,31 +22,20 @@ namespace Final_MineSweeper.Forms
 
 
 		/// <summary>
-		/// delegate function that is called with a tile input
-		/// </summary>
-		/// <param name="t">Tile</param>
-		public delegate void tileCallback(Tile t);
-
-		/// <summary>
 		/// list of a list of the tiles in the game
 		/// </summary>
-		readonly List<List<Tile>> mineField = new List<List<Tile>>();
 		MineField field;
 
 		// ints
 #pragma warning disable IDE0044 // Add readonly modifier
 
-		int height = 9, // height of game board
-			width = 9, // width of game board
-			mineCount = 10, // number of mines in the game
-			flagsRemaining = 99; // number of flags that are left
+		int height = 9;			// height of game board
+		int width = 9;			// width of game board
+		int mineCount = 10;		// number of mines in the game
 
 #pragma warning restore IDE0044 // Add readonly modifier
 
-
 		TimeSpan highscore = new TimeSpan(long.MaxValue); // highscore, set to long.MaxValue when not set
-
-		bool running = false; // is the game running
 
 		DateTime startTime = DateTime.MinValue; // game start time, is set to MinValue when clock not running
 
@@ -60,9 +49,9 @@ namespace Final_MineSweeper.Forms
 		public void NewGame()
 		{
 			NewMinefield(); // Creates a blank minefield
-			GenerateMines(); // Adds mines to the minefield
-			AddNeighbours(); // allow tiles to ineract with their neighbours
-			flagsRemaining = mineCount; // initialise the flag count
+
+			field.GameStateChangedEventHandler += OnGameOver; // add gameover event handler
+
 			canvas.Invalidate(); // updates canvas
 			startTime = DateTime.MinValue; // reset the start time
 			timer1.Start(); // start the timer
@@ -74,195 +63,28 @@ namespace Final_MineSweeper.Forms
 		public void NewMinefield()
 		{
 			field = new MineField(height, width, mineCount);
-			mineField.Clear(); // clear minefield
-			for (int i = 0; i < width; i++) // for each collumn
-			{
-				List<Tile> col = new List<Tile>(); // create a new list for the column
-				for (int j = 0; j < height; j++) // for each row
-				{
-					col.Add(new Tile(i, j)); // add a tile in the collumn
-				}
-				mineField.Add(col); // add the collumn to the field
-			}
 		}
 
-		/// <summary>
-		/// Places the correct number of mines on the board
-		/// Does not clear previously placed mines from the field
-		/// </summary>
-		public void GenerateMines()
-		{
-			int bombsAdded = 0; // counter for number of bombs placed
-			Random r = new Random();
+		#endregion
 
-			// while the number of mines placed is less than the number that should be placed
-			while (bombsAdded < mineCount)
-			{
-				// get new random position
-				int x = r.Next(0, height);
-				int y = r.Next(0, width);
-
-				// if it isnt already a bomb
-				if (!mineField[x][y].IsBomb)
-				{
-					// set the tile as a bomb
-					mineField[x][y].IsBomb = true;
-					bombsAdded++;
-				}
-			}
-		}
+		#region Events
 
 		/// <summary>
-		/// loops over each tile in the field and adds its neighbours to the tiles neighbours array
+		/// Game State Change Handler
 		/// </summary>
-		public void AddNeighbours()
+		public void OnGameOver(Object Sender, EventArgs e)
 		{
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => {
-					// for each tile add the tiles neighbours
-					ForNeighbors(t, t.AddNeighbour);
-				});
-			});
-		}
+			canvas.Invalidate(); // updates canvas
 
-		/// <summary>
-		/// Loops over the minefield array and counts the number of flags that havent been used
-		/// </summary>
-		/// <returns></returns>
-		public int CalculateRemainingFlags()
-		{
-			int flags = mineCount; // set the flag counter to max value (number of mines)
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => { // loop over each tile
-										  // if the tile is flaged
-					if (t.State == Tile.TileState.flagged)
-						flags--; // decrement flag counter
-				});
-			});
-			return flags;
-		}
-
-		/// <summary>
-		/// checks the passed tile and executes passed callback with each neighbour tile as parameter
-		/// </summary>
-		/// <param name="tile">Center Tile</param>
-		/// <param name="callback">function called for each of tile's neighbours</param>
-		public void ForNeighbors(Tile tile, tileCallback callback)
-		{
-			// in this case there is 9 different possibilites
-
-			// if the tile is in the top right corner
-			if (tile.X == 0 && tile.Y == 0)
-			{
-				// run calbacks
-				callback(mineField[tile.X + 1][tile.Y]);
-				callback(mineField[tile.X + 1][tile.Y + 1]);
-				callback(mineField[tile.X][tile.Y + 1]);
-			}
-			else if (tile.X == 0 && tile.Y == height - 1) // tile is in the bottom right corner
-			{
-				// run calbacks
-				callback(mineField[tile.X + 1][tile.Y]);
-				callback(mineField[tile.X + 1][tile.Y - 1]);
-				callback(mineField[tile.X][tile.Y - 1]);
-			}
-			else if (tile.X == width - 1 && tile.Y == 0) // tile is in the top left corner
-			{
-				// run calbacks
-				callback(mineField[tile.X - 1][tile.Y]);
-				callback(mineField[tile.X - 1][tile.Y + 1]);
-				callback(mineField[tile.X][tile.Y + 1]);
-			}
-			else if (tile.X == width - 1 && tile.Y == height - 1) // tile is in the bottom left corner
-			{
-				// run calbacks
-				callback(mineField[tile.X - 1][tile.Y]);
-				callback(mineField[tile.X - 1][tile.Y - 1]);
-				callback(mineField[tile.X][tile.Y - 1]);
-			}
-			else if (tile.X == 0) // tile is in the top row
-			{
-				// run calbacks
-				callback(mineField[tile.X][tile.Y - 1]);
-				callback(mineField[tile.X + 1][tile.Y - 1]);
-				callback(mineField[tile.X + 1][tile.Y]);
-				callback(mineField[tile.X + 1][tile.Y + 1]);
-				callback(mineField[tile.X][tile.Y + 1]);
-			}
-			else if (tile.X == width - 1) // tile is in the bottom row
-			{
-				// run calbacks
-				callback(mineField[tile.X][tile.Y - 1]);
-				callback(mineField[tile.X - 1][tile.Y - 1]);
-				callback(mineField[tile.X - 1][tile.Y]);
-				callback(mineField[tile.X - 1][tile.Y + 1]);
-				callback(mineField[tile.X][tile.Y + 1]);
-			}
-			else if (tile.Y == 0) // tile is in the right collumn
-			{
-				// run calbacks
-				callback(mineField[tile.X - 1][tile.Y]);
-				callback(mineField[tile.X - 1][tile.Y + 1]);
-				callback(mineField[tile.X][tile.Y + 1]);
-				callback(mineField[tile.X + 1][tile.Y + 1]);
-				callback(mineField[tile.X + 1][tile.Y]);
-			}
-			else if (tile.Y == height - 1) // tile is in the left collumn
-			{
-				// run calbacks
-				callback(mineField[tile.X - 1][tile.Y]);
-				callback(mineField[tile.X - 1][tile.Y - 1]);
-				callback(mineField[tile.X][tile.Y - 1]);
-				callback(mineField[tile.X + 1][tile.Y - 1]);
-				callback(mineField[tile.X + 1][tile.Y]);
-			}
-			else // tile is in the center
-			{
-				// run calbacks
-				callback(mineField[tile.X - 1][tile.Y - 1]);
-				callback(mineField[tile.X][tile.Y - 1]);
-				callback(mineField[tile.X + 1][tile.Y - 1]);
-				callback(mineField[tile.X + 1][tile.Y]);
-				callback(mineField[tile.X + 1][tile.Y + 1]);
-				callback(mineField[tile.X][tile.Y + 1]);
-				callback(mineField[tile.X - 1][tile.Y + 1]);
-				callback(mineField[tile.X - 1][tile.Y]);
-			}
-		}
-
-		/// <summary>
-		/// Checks if the game should be ended
-		/// </summary>
-		public void CheckGameOver()
-		{
-			bool loss = false;
-			bool win = true;
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => {
-					if (t.IsBomb && t.State == Tile.TileState.revealed)
-					{ // if a bomb is clicked
-						loss = true; // you have loss
-
-					}
-					if (!t.IsBomb && t.State != Tile.TileState.revealed)
-					{ // if the tile is not a bomb and has not been opened
-						win = false; // you haven't won yet
-					}
-				});
-			});
-
-			if (loss)
+			if (field.State == MineField.GameState.Lose)
 			{
 				// open every tile to show user the correct positions
-				mineField.ForEach((List<Tile> col) => {
-					col.ForEach((Tile t) => {
-						t.State = Tile.TileState.revealed;
-					});
+				field.ForEachTile(dat => {
+					if (dat.State == Tile.TileState.flagged && dat.IsBomb) return;
+					field.SetTileState(dat, Tile.TileState.revealed); 
 				});
 
 				canvas.Invalidate(); // update canvas
-
-				running = false; // stop running game
 
 				timer1.Stop(); // stop timer
 				DateTime now = DateTime.Now; // get current time
@@ -270,11 +92,9 @@ namespace Final_MineSweeper.Forms
 
 				MessageBox.Show(String.Format("You lost the game after {0:0.###} seconds", time.TotalSeconds), "You Lost", MessageBoxButtons.OK, MessageBoxIcon.Error); // Message displaying you loss and your time
 			}
-			else if (win)
+			else if (field.State == MineField.GameState.Win)
 			{
-				// dont need to clicked the tiles here because if they've won they already done that for us
-
-				running = false; // stop running game
+				field.ForEachTile(dat => { if (dat.IsBomb)field.SetTileState(dat, Tile.TileState.flagged); });
 
 				timer1.Stop(); // stop timer
 				DateTime now = DateTime.Now; // get current time
@@ -291,9 +111,6 @@ namespace Final_MineSweeper.Forms
 			}
 		}
 
-		#endregion
-
-		#region Events
 
 		/// <summary>
 		/// on Load
@@ -303,7 +120,7 @@ namespace Final_MineSweeper.Forms
 		private void Form1_Load(object sender, EventArgs e)
 		{
 			// setup the minefield array so it doesn't fail when trying to draw
-			NewMinefield();
+			NewGame();
 		}
 
 		/// <summary>
@@ -313,13 +130,7 @@ namespace Final_MineSweeper.Forms
 		/// <param name="e">Event Args</param>
 		private void Canvas_Paint(object sender, PaintEventArgs e)
 		{
-			// loops over each tile and tells it to draw it self with the given graphics
-			mineField.ForEach((List<Tile> col) => {
-				col.ForEach((Tile t) => {
-					t.Draw(e.Graphics);
-				});
-			});
-
+			field.ForEachTile(dat => dat.Draw(e.Graphics));
 		}
 
 		/// <summary>
@@ -332,12 +143,11 @@ namespace Final_MineSweeper.Forms
 			NewGame();
 			lblTimer.Text = "0";
 			lblFlags.Text = mineCount.ToString();
-			running = true;
 		}
 
 		private void Canvas_MouseClick(object sender, MouseEventArgs e)
 		{
-			if (!running) return;
+			if (field.State != MineField.GameState.Running) return;
 
 			//find tile clicked
 			int x, y;
@@ -345,19 +155,40 @@ namespace Final_MineSweeper.Forms
 			y = e.Y / (TileVisuals.size);
 
 			// tell the tile it was clicked
-			mineField[x][y].Click(e);
+			//mineField[x][y].Click(e);
+			TileData data = field.GetTileData(x, y);
+			Tile.TileState state = data.State;
+
+			if (state == Tile.TileState.hidden && e.Button == MouseButtons.Left) // if state of mouse click is left mouse click
+			{
+				field.OpenTile(data); // open tile
+
+			}
+			else if (state == Tile.TileState.hidden && e.Button == MouseButtons.Right) // if state of mouse click is right mouse click
+			{
+				field.FlagTile(data); // state is clicked and is flagged
+			}
+			else if (state == Tile.TileState.flagged && e.Button == MouseButtons.Right) // if state of mouse click is right mouse click on a flagged tile
+			{
+				field.UnFlagTile(data); // state is unclicked and flag is removed
+			}
+			else if (state == Tile.TileState.revealed && e.Button == MouseButtons.Right) // if state of mouse click is right mouse click on a tile
+			{
+				// open up minefields
+
+				if (field.GetTileData(x, y).FlagsNear == field.GetTileData(x, y).Danger) // if number of flags is equailvalent to bombs
+				{
+					field.ForTileNeighbours(data, (newData) => field.OpenTile(newData) );// open up more tiles
+				}
+			}
 
 			//calculate the number of flags remaining and display that to the user
-			flagsRemaining = CalculateRemainingFlags();
-			lblFlags.Text = flagsRemaining.ToString();
+			lblFlags.Text = field.FlagsRemaining.ToString();
 
 			// re-draw the screen
 			canvas.Invalidate();
 			//if the timer hasn't been started then start it;
 			if (startTime.CompareTo(DateTime.MinValue) == 0) startTime = DateTime.Now;
-
-			//check if the game is over
-			CheckGameOver();
 		}
 
 		/// <summary>
@@ -368,7 +199,7 @@ namespace Final_MineSweeper.Forms
 		private void Timer1_Tick(object sender, EventArgs e)
 		{
 			if (startTime.CompareTo(DateTime.MinValue) == 0) return;
-			if (!running) return;
+			if (field.State != MineField.GameState.Running) return;
 
 			DateTime now = DateTime.Now;
 			TimeSpan time = now.Subtract(startTime);
@@ -386,214 +217,10 @@ namespace Final_MineSweeper.Forms
 
 	}
 
-	/// <summary>
-	/// Class to hold data and methods for each tile
-	/// </summary>
-	//public class Tile
-	//{
-	//	/// <summary>
-	//	/// Initalises the tile object
-	//	/// </summary>
-	//	/// <param name="x">horisontal location</param>
-	//	/// <param name="y">vertical location</param>
-	//	public Tile(int x, int y)
-	//	{
-	//		// set the location
-	//		this.x = x;
-	//		this.y = y;
-	//	}
-
-	//	/// <summary>
-	//	/// Possible tile states
-	//	/// </summary>
-	//	public enum ClickedState
-	//	{
-	//		unClicked,
-	//		clicked,
-	//		flagged
-	//	}
-
-	//	#region Global Variables
-
-	//	public List<Tile> neighbours = new List<Tile>(); // list of neighbour tiles
-
-	//	public ClickedState state = ClickedState.unClicked; // default clicked state is unclicked
-	//	public bool isBomb = false; // is the tile a bomb
-	//	public byte bombsNear = 0; // number of bombs surounding the tile
-
-	//	public static int size = 30;  // size of the tile (30x30) when drawn
-	//	public int x, y; // tile's location on the game board 
-
-	//	#endregion
-
-	//	#region Functions
-
-	//	/// <summary>
- //       /// Calculates the danger lever (mines around the tile) with the neighbour tiles
- //       /// </summary>
-	//	public void CalculateDanger()
-	//	{
-	//		bombsNear = 0;
-	//		neighbours.ForEach((Tile t) => {
-	//			if (t.isBomb)
-	//				bombsNear++;
-	//		});
-	//	}
-
-	//	/// <summary>
- //       /// adds a neighbour to the tile and re-calculates the danger level
- //       /// </summary>
- //       /// <param name="t"> the tile to add as a neighbour</param>
-	//	public void AddNeighbour(Tile t)
-	//	{
-	//		neighbours.Add(t); 
-	//		CalculateDanger();
-	//	}
-
-	//	/// <summary>
- //       /// Handles click event on the tile
- //       /// </summary>
- //       /// <param name="e">MouseEventArgs contining the mouse button pressed, location, press count and </param>
-	//	public void Click(MouseEventArgs e)
-	//	{
-	//		if (state == ClickedState.unClicked && e.Button == MouseButtons.Left) // if state of mouse click is left mouse click
-	//		{
-	//			state = ClickedState.clicked; // state of the clicked state is click
-	//			if (bombsNear == 0) // if bombs near is 0
-	//			{
-	//				neighbours.ForEach(
-	//					(Tile t) => {
-	//						t.Click(new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
-	//					}
-	//				);
-	//			}
-	//		}
-	//		else if (state == ClickedState.unClicked && e.Button == MouseButtons.Right) // if state of mouse click is right mouse click
-	//		{
-	//			state = ClickedState.flagged; // state is clicked and is flagged
-	//		}
-	//		else if (state == ClickedState.flagged && e.Button == MouseButtons.Right) // if state of mouse click is right mouse click on a flagged tile
-	//		{
-	//			state = ClickedState.unClicked; // state is unclicked and flag is removed
-	//		}
-	//		else if (state == ClickedState.clicked && e.Button == MouseButtons.Right) // if state of mouse click is right mouse click on a tile
-	//		{
-	//			// open up minefields
-	//			int flagsNear = 0; // flags nearby is 0 
-	//			neighbours.ForEach((Tile t) => { if (t.state == ClickedState.flagged) flagsNear++; }); // count how many flags are on the tiles surrounding this one
-	//			if (flagsNear == bombsNear) // if number of flags is equailvalent to bombs
-	//			{
-	//				neighbours.ForEach((Tile t) => t.Click(new MouseEventArgs(MouseButtons.Left, 0, 0, 0, 0))); // open up more tiles
-	//			}
-	//		}
-	//	}
-
-	//	public void Draw(Graphics g)
-	//	{
-	//		if (state.Equals(ClickedState.unClicked)) // if clicked state is unclicked
-	//		{
-	//			// Fill
-	//			SolidBrush b = new SolidBrush(Color.FromArgb(192, 192, 192));
-	//			g.FillRectangle(b, x * size, y * size, size, size);
-
-	//			// Border
-	//			Pen p = new Pen(Color.Black, 2);
-
-	//			p.Color = Color.FromArgb(126, 126, 126);
-	//			g.DrawLine(p, x * size + size - 1, y * size, x * size + size - 1, y * size + size); // draw right edge
-	//			g.DrawLine(p, x * size, y * size + size - 1, x * size + size, y * size + size - 1); // draw bottom edge
-
-	//			p.Color = Color.White;
-	//			g.DrawLine(p, x * size + 1, y * size, x * size + 1, y * size + size); // draw left edge
-	//			g.DrawLine(p, x * size, y * size + 1, x * size + size, y * size + 1); // draw top edge
-
-	//		}
-	//		else if (state.Equals(ClickedState.clicked)) // if clicked state is clicked
-	//		{
-	//			// Fill
-	//			SolidBrush b = new SolidBrush(Color.FromArgb(192, 192, 192));
-	//			g.FillRectangle(b, x * size, y * size, size, size);
-
-	//			// Border
-	//			Pen p = new Pen(Color.FromArgb(133, 133, 133), 2);
-
-	//			g.DrawLine(p, x * size + 1, y * size, x * size + 1, y * size + size); // draw left edge
-	//			g.DrawLine(p, x * size, y * size + 1, x * size + size, y * size + 1); // draw top edge
-
-	//			if (isBomb)
-	//			{
-	//				// Draw Bomb
-	//				b.Color = Color.Black;
-	//				g.FillEllipse(b, x * size + 5, y * size + 5, size - 10, size - 10);
-	//			}
-	//			else
-	//			{
-	//				switch (bombsNear) // make text correct color
-	//				{
-	//					case 1:
-	//						b.Color = Color.Blue;
-	//						break;
-	//					case 2:
-	//						b.Color = Color.Green;
-	//						break;
-	//					case 3:
-	//						b.Color = Color.Red;
-	//						break;
-	//					case 4:
-	//						b.Color = Color.Navy;
-	//						break;
-	//					case 5:
-	//						b.Color = Color.FromArgb(128, 0, 0);
-	//						break;
-	//					case 6:
-	//						b.Color = Color.FromArgb(0, 128, 128);
-	//						break;
-	//					case 7:
-	//						b.Color = Color.Black;
-	//						break;
-	//					case 8:
-	//						b.Color = Color.FromArgb(128, 128, 128);
-	//						break;
-	//					default:
-	//						break;
-	//				}
-
-	//				g.DrawString(bombsNear.ToString(), new Font("Arial", 18), b, new RectangleF(x * size, y * size, size - 1, size - 1));
-	//			}
-	//		}
-	//		else if (state.Equals(ClickedState.flagged)) // if clicked state is flagged
-	//		{
-	//			// fill
-	//			SolidBrush b = new SolidBrush(Color.FromArgb(192, 192, 192));
-	//			g.FillRectangle(b, x * size, y * size, size, size);
-
-	//			// Border
-	//			Pen p = new Pen(Color.Black, 2);
-
-	//			p.Color = Color.FromArgb(126, 126, 126);
-	//			g.DrawLine(p, x * size + size - 1, y * size, x * size + size - 1, y * size + size); // draw right edge
-	//			g.DrawLine(p, x * size, y * size + size - 1, x * size + size, y * size + size - 1); // draw bottom edge
-
-	//			p.Color = Color.White;
-	//			g.DrawLine(p, x * size + 1, y * size, x * size + 1, y * size + size); // draw left edge
-	//			g.DrawLine(p, x * size, y * size + 1, x * size + size, y * size + 1); // draw top edge
-
-	//			// Flags
-	//			b.Color = Color.Red;
-	//			g.FillEllipse(b, x * size + 5, y * size + 5, size - 10, size - 10);
-
-
-	//		}
-	//	}
-
-	//	#endregion
-
-	//}
-
 	public static class TileVisuals
 	{
 		public static int size = 30;  // size of the tile (30x30) when drawn
-		public static void Draw(this Tile tile, Graphics g)
+		public static void Draw(this TileData tile, Graphics g)
 		{
 			if (tile.State.Equals(Tile.TileState.hidden)) // if clicked state is unclicked
 			{
@@ -635,7 +262,7 @@ namespace Final_MineSweeper.Forms
 				}
 				else
 				{
-					switch (tile.BombsNear) // make text correct color
+					switch (tile.Danger) // make text correct color
 					{
 						case 1:
 							b.Color = Color.Blue;
@@ -665,7 +292,7 @@ namespace Final_MineSweeper.Forms
 							break;
 					}
 
-					g.DrawString(tile.BombsNear.ToString(), new Font("Arial", 18), b, new RectangleF(tile.X * size, tile.Y * size, size - 1, size - 1));
+					g.DrawString(tile.Danger.ToString(), new Font("Arial", 18), b, new RectangleF(tile.X * size, tile.Y * size, size - 1, size - 1));
 				}
 			}
 			else if (tile.State.Equals(Tile.TileState.flagged)) // if clicked state is flagged
